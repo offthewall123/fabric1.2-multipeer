@@ -40,6 +40,7 @@ fabric1.2多机搭建&amp;通过配置文件加入新组织&amp;通过官网工�
 **准备order节点的docker配置文件启动容器**  
 配置docker-compose-orderer.yaml，放到multipeer目录下  
 `root@153:/home/u1/multipeer# docker-compose -f docker-compose-orderer.yaml up -d`  
-启动order节点容器，此时可以docker ps一下应该是有一个容器在运行的。
+启动order节点容器，此时可以docker ps一下应该是有一个容器在运行的。  
+![orderContainer](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/order.PNG)
 
 
