@@ -117,7 +117,13 @@ docker cp 后面跟的是当前cli容器的ID需要自己修改
 `peer channel join -b mychannel.block`  
 提示Successfully submitted proposal to join channel说明加入成功，此时还需要install一下链码，注意的是一个通道内instantiate过一次链码之后，之后加入通道的组织只需要再install一次即可  
 `peer chaincode install -n mycc -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02 -v 1.0`  
-query一下
+query一下  
 `peer chaincode query -C mychannel -n mycc -c '{"Args":["query","a"]}'`  
+![peer0org2querySuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org2querySuccess.PNG)
+因为peer0.org1之前做过一次invoke所以现在query出来a为90没有问题，同一个通道内成员的数据是同步的。  
+可以再两台机子上容器内跑命令  
+`peer channel getinfo -c mychannel`  
+返回的Blockchain info: {"height":3,"currentBlockHash":"rjRFK1bxEXHqBghrSOQU1sjGh4tnp9wGOHQ7G65KdHk=","previousBlockHash":"z5ZuoLBjcpp7CAXhfN/Dv5GMmZcEE4y/1yM6lgU67LM="}  
+说明我们第二个org加入channel成功了。
 
 
