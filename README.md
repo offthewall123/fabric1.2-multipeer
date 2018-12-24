@@ -48,6 +48,9 @@ fabric1.2多机搭建&amp;通过配置文件加入新组织&amp;通过官网工�
 **准备docker-compose-peer.yaml**  
 上传docker-compose-peer.yaml至multipeer目录下（注意配置文件里ip和组织名需要自己修改)
 
-**准备chaincode**
+**准备chaincode**  
 上传fudancode02至multeer/chaincode/go/  
+
+**启动第一个peer容器**
+` docker-compose -f docker-compose-peer.yaml up -d`  
 
