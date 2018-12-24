@@ -53,5 +53,18 @@ fabric1.2多机搭建&amp;通过配置文件加入新组织&amp;通过官网工�
 
 **启动第一个peer容器**  
 `root@ubuntu16:/home/u1/multipeer# docker-compose -f docker-compose-peer.yaml up -d`  
-此时docker ps 一下可以看到机器上有跑两个容器![peerContainer](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1.PNG)
+此时docker ps 一下可以看到机器上有跑两个容器![peerContainer](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1.PNG)  
+
+**进入cli容器并且创建channel**  
+`root@ubuntu16:/home/u1/multipeer# docker exec -it cli bash`  
+配置cafile路径  
+`root@3c0fed2a4547:/opt/gopath/src/github.com/hyperledger/fabric/peer# ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`  
+创建channel  
+`root@3c0fed2a4547:/opt/gopath/src/github.com/hyperledger/fabric/peer# peer channel create -o orderer.example.com:7050 -c mychannel -f ./channel-artifacts/mychannel.tx --tls --cafile $ORDERER_CA`  
+这里用到的 --cafile,就是我们之前order那台机器上生成的证书文件  
+这个时候我们在cli容器里ls一下会多了一个mychannel.block的通道配置文件  
+![mychannelBlock](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1mychannel.PNG)  
+这个文件很重要，我们需要将其复制出来到宿主机器上，并转发给我们另一台机器。但在此之前先将当前peer加入到这个channel  
+`root@3c0fed2a4547:/opt/gopath/src/github.com/hyperledger/fabric/peer#  peer channel join -b mychannel.block`  
+![peer0org1JoinSuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1JoinSuccess.PNG)
 
