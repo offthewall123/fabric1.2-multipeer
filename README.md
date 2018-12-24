@@ -156,3 +156,40 @@ query一下
 `./bin/configtxlator proto_decode --input config_block.pb --type common.Block | jq .data.data[0].payload.data.config > config.json`  
 此时目录下多了一个config.json文件  
 
+**将org3的配置信息加到config.json中，输出新文件为modified_config.json**  
+`jq -s '.[0] * {"channel_group":{"groups":{"Application":{"groups": {"Org3MSP":.[1]}}}}}' config.json ./channel-artifacts/org3.json > modified_config.json`  
+此时目录下多了一个modified_config.json，config.json是最初包含org1和org2的信息，modified_config.json包含了三个org的信息。  
+
+**将config.json转换为config.pb**  
+`./bin/configtxlator proto_encode --input config.json --type common.Config --output config.pb`  
+此时目录下多了一个config.pb文件  
+
+**将modified_config.json转换为modified_config.pb**    
+`./bin/configtxlator proto_encode --input modified_config.json --type common.Config --output modified_config.pb`  
+此时目录下多了modified_config.pb文件  
+
+**计算modified_config.json.pb和config.pb的差异输出到org3_update.pb**  
+`./bin/configtxlator compute_update --channel_id mychannel --original config.pb --updated modified_config.pb --output org3_update.pb`  
+此时目录下多了一个org3_update.pb  
+
+**将org3_update.pb转换成org3_update.json**  
+`./bin/configtxlator proto_decode --input org3_update.pb --type common.ConfigUpdate | jq . > org3_update.json`  
+此时目录下多了一个org3_update.json  
+
+**将json提案文件转为二进制提案文件**  
+`echo '{"payload":{"header":{"channel_header":{"channel_id":"mychannel", "type":2}},"data":{"config_update":'$(cat org3_update.json)'}}}' | jq . > org3_update_in_envelope.json`  
+此时目录下多了org3_update_in_envelope.json  
+`./bin/configtxlator proto_encode --input org3_update_in_envelope.json --type common.Envelope --output org3_update_in_envelope.pb`  
+此时目录下多了org3_update_in_envelope.pb这个文件是我们最终需要用来更新通道信息的文件。  
+
+
+**签名并提交更新请求**  
+将上一步得到的org3_update_in_envelope.pb复制到cli容器内  
+`docker cp org3_update_in_envelope.pb d76a5c35c049:/opt/gopath/src/github.com/hyperledger/fabric/peer/`  
+`docker exec -it cli bash`  
+签名  
+`peer channel signconfigtx -f org3_update_in_envelope.pb`  
+
+
+
+
