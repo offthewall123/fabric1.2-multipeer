@@ -129,3 +129,30 @@ query一下
 
 ## 到目前为止，我们通过配置文件加入新的org到channel没有问题，下面介绍一下通过官网提供的`configtxlator`工具加入一个新的org3到channel 
 **也可以参照官网的[Adding an Org to a Channel](https://hyperledger-fabric.readthedocs.io/en/release-1.2/channel_update_tutorial.html)这一章节结合着看**
+
+
+**准备工作**  
+在org1机器/home/u1 下新建文件夹multipeerOrg3 复制一份之前bin文件夹到目录下  
+准备configtx.yaml和org3-crypto.yaml上传到multipeerOrg3目录下，这两个文件可以从fabric-samples-release1.2->first-network->org3-artifacts目录下找到。  
+**生成org3的证书信息**  
+`./bin/cryptogen generate --config=./org3-crypto.yaml`  
+`mkdir channel-artifacts`  
+`export FABRIC_CFG_PATH=$PWD && ./bin/configtxgen -printOrg Org3MSP > ./channel-artifacts/org3.json`  
+此时multipeerOrg3目录下多了一个crypto-config目录和channle-artifacts目录  
+
+到order节点的服务器上将multipeer/crypto-config/ordererOrganizations目录复制到mutipeerOrg3/crypto-config/  
+
+进入容器
+`docker exec -it cli bash`  
+设置变量名  
+`export ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem  && export CHANNEL_NAME=mychannel`
+
+**获取当前channel配置**  
+`peer channel fetch config config_block.pb -o orderer.example.com:7050 -c $CHANNEL_NAME --tls --cafile $ORDERER_CA`  
+可以看到peer目录下多了一个config.pb文件，这个是当前网络的配置信息，将其复制到宿主机器上  
+`exit`  
+`docker cp d76a5c35c049:/opt/gopath/src/github.com/hyperledger/fabric/peer/config_block.pb ./`  
+**使用configtxlator将config.pb转换成可读的json文件**  
+`./bin/configtxlator proto_decode --input config_block.pb --type common.Block | jq .data.data[0].payload.data.config > config.json`  
+此时目录下多了一个config.json文件  
+
