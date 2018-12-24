@@ -127,5 +127,5 @@ query一下
 说明我们第二个org加入channel成功了。  
 ***  
 
-## 到目前为止，我们通过配置文件加入新的org到channel没有问题，下面介绍一下通过官网提供的`configtxlator`工具加入一个新的org3到channel  
-
+## 到目前为止，我们通过配置文件加入新的org到channel没有问题，下面介绍一下通过官网提供的`configtxlator`工具加入一个新的org3到channel 
+**也可以参照官网的[链接](https://hyperledger-fabric.readthedocs.io/en/release-1.2/channel_update_tutorial.html)结合着看**
