@@ -201,3 +201,26 @@ query一下
 `peer channel update -f org3_update_in_envelope.pb -c $CHANNEL_NAME -o orderer.example.com:7050 --tls --cafile $ORDERER_CA`  
 ![sendUpdateSuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/sendUpdateSuccess.PNG)  
 
+
+**编写org3的yaml文件docker-compose-org3.yaml**  
+extra_hosts 里需要配置好order节点的ip和当前两个org锚节点的ip，和自己的ip。上传到multipeerOrg3目录下。  
+将整个multipeerOrg3文件夹发到到order节点的服务器上。  
+`scp -r multipeerOrg3/ u1@10.108.233.153:/home/u1/`  
+
+**启动org3容器加入channel**  
+`docker-compose -f docker-compose-org3.yaml up -d`  
+`docker exec -it Org3cli bash`  
+`export ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem && export CHANNEL_NAME=mychannel`  
+
+使用peer channel fetch 获取mychannel.block  
+`peer channel fetch 0 mychannel.block -o orderer.example.com:7050 -c $CHANNEL_NAME --tls --cafile $ORDERER_CA`  
+可以看到peer目录下多了一个mychannel.block文件，有了这个文件之后就可以加入到通道了  
+`peer channel join -b mychannel.block`  
+我们执行一下`peer channel getinfo -c mychannel` 得到  
+`Blockchain info: {"height":4,"currentBlockHash":"SMSXuf+KMk5a/0OHdoLbnkJuQzQ5iZDOIdcqovMKTtA=","previousBlockHash":"rjRFK1bxEXHqBghrSOQU1sjGh4tnp9wGOHQ7G65KdHk="}`  
+在其他两台机器上输入同样命令得到了同样的Blockchain info，说明到这步为止，我们org3加入到这个channel成功了，还差最后一步链码的一些操作。
+
+**升级更新链码**  
+在org3 cli中执行  
+`peer chaincode install -n mycc -v 2.0 -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02/`  
+注意这里的-v升级成了2.0  
