@@ -68,3 +68,34 @@ fabric1.2多机搭建&amp;通过配置文件加入新组织&amp;通过官网工�
 `root@3c0fed2a4547:/opt/gopath/src/github.com/hyperledger/fabric/peer#  peer channel join -b mychannel.block`  
 ![peer0org1JoinSuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1JoinSuccess.PNG)
 
+**保存channel配置文件到宿主机器并发送给另一台机器上**  
+
+退出cli容器  
+`root@3c0fed2a4547:/opt/gopath/src/github.com/hyperledger/fabric/peer# exit`
+
+复制mychannel.block文件到宿主机器并发送给另一台  
+`root@ubuntu16:/home/u1/multipeer# docker cp 3c0fed2a4547:/opt/gopath/src/github.com/hyperledger/fabric/peer/mychannel.block ./`  
+注意这里docker cp 命令后面跟的id是你起的docker容器id  
+发送mychannel.block  
+`root@ubuntu16:/home/u1/multipeer# scp mychannel.block u1@10.108.233.163:/home/u1/multipeer/`
+
+**安装链码并执行合约**  
+进入容器并安装  
+`root@ubuntu16:/home/u1/multipeer# docker exec -it cli bash`  
+
+`root@3c0fed2a4547:/opt/gopath/src/github.com/hyperledger/fabric/peer# peer chaincode install -n mycc -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02 -v 1.0`  
+这条命令 -n 代表我们安装这个链码的名字， -p代表链码文件所在的路径，-v 代表链码的版本，这些都可以修改。我们之所以能在容器内访问到链码文件，是因为我们之前的docker-compose-peer.yaml里面有配置容器和宿主机器的磁盘映射。  
+安装成功  
+![installSuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1InstallSuccess.PNG)  
+
+实例化合约代码初始化a为100 b为200
+`ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`  
+
+`peer chaincode instantiate -o orderer.example.com:7050 --tls --cafile $ORDERER_CA -C mychannel -n mycc -v 1.0 -c '{"Args":["init","a","100","b","200"]}' -P "OR ('Org1MSP.peer','Org2MSP.peer')"`
+
+peer上查询a的值为100  
+`peer chaincode query -C mychannel -n mycc -c '{"Args":["query","a"]}'`  
+-C是通道名，-n 合约名, -c query为合约里的函数， 后面的"a"为传参数给他。  
+查询成功截图  
+![querySuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/querySuccess.PNG)
+
