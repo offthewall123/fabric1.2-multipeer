@@ -99,3 +99,25 @@ peer上查询a的值为100
 查询成功截图  
 ![querySuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/querySuccess.PNG)
 
+在peer上进行转账操作  
+`peer chaincode invoke --tls --cafile $ORDERER_CA -C mychannel -n mycc -c '{"Args":["invoke","a","b","10"]}'`  
+![peer0org1InvokeSuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1InvokeSuccess.PNG)
+***
+
+## Step3:peer0.org2加入通道  
+同样的准备docker配置文件docker-compose-peer.yaml放到multipeer&准备链码上传fudancode02至multeer/chaincode/go/  
+启动容器  
+`docker-compose -f docker-compose-peer.yaml up -d`  
+将mychannel.block 复制到容器的/opt/gopath/src/github.com/hyperledger/fabric/peer 目录下  
+`docker cp mychannel.block 07fab6448fe5:/opt/gopath/src/github.com/hyperledger/fabric/peer/`  
+docker cp 后面跟的是当前cli容器的ID需要自己修改  
+
+进入容器将peer加入到channel  
+` docker exec -it cli bash`  
+`peer channel join -b mychannel.block`  
+提示Successfully submitted proposal to join channel说明加入成功，此时还需要install一下链码，注意的是一个通道内instantiate过一次链码之后，之后加入通道的组织只需要再install一次即可  
+`peer chaincode install -n mycc -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02 -v 1.0`  
+query一下
+`peer chaincode query -C mychannel -n mycc -c '{"Args":["query","a"]}'`  
+
+
