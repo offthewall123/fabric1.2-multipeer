@@ -52,5 +52,6 @@ fabric1.2多机搭建&amp;通过配置文件加入新组织&amp;通过官网工�
 上传fudancode02至multeer/chaincode/go/  
 
 **启动第一个peer容器**  
-` docker-compose -f docker-compose-peer.yaml up -d`  
+`root@ubuntu16:/home/u1/multipeer# docker-compose -f docker-compose-peer.yaml up -d`  
+此时docker ps 一下可以看到机器上有跑两个容器![peerContainer](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1.PNG)
 
