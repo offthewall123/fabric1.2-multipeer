@@ -124,6 +124,8 @@ query一下
 可以再两台机子上容器内跑命令  
 `peer channel getinfo -c mychannel`  
 返回的Blockchain info: {"height":3,"currentBlockHash":"rjRFK1bxEXHqBghrSOQU1sjGh4tnp9wGOHQ7G65KdHk=","previousBlockHash":"z5ZuoLBjcpp7CAXhfN/Dv5GMmZcEE4y/1yM6lgU67LM="}  
-说明我们第二个org加入channel成功了。
+说明我们第二个org加入channel成功了。  
+***  
 
+## 到目前为止，我们通过配置文件加入新的org到channel没有问题，下面介绍一下通过官网提供的`configtxlator`工具加入一个新的org3到channel  
 
