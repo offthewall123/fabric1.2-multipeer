@@ -189,7 +189,15 @@ query一下
 `docker exec -it cli bash`  
 签名  
 `peer channel signconfigtx -f org3_update_in_envelope.pb`  
+![peer0org1signSuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/peer0org1SignSuccess.PNG)
 
+**导出org2环境变量**  
+`export CORE_PEER_LOCALMSPID="Org2MSP"`  
+`export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt`  
+`export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp`  
+`export CORE_PEER_ADDRESS=peer0.org2.example.com:7051`  
 
-
+**发送更新请求**  
+`peer channel update -f org3_update_in_envelope.pb -c $CHANNEL_NAME -o orderer.example.com:7050 --tls --cafile $ORDERER_CA`  
+![sendUpdateSuccess](https://github.com/offthewall123/fabric1.2-multipeer/blob/master/imgs/sendUpdateSuccess.PNG)  
 
