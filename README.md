@@ -1,5 +1,7 @@
-# fabric1.2-multipeer
+# fabric1.2-multipeer（用到的配置文件都会放在仓库里）
 fabric1.2多机搭建&amp;通过配置文件加入新组织&amp;通过官网工具动态加入新组织
+
+
 
 使用3台服务器节点结构如下
 --------
@@ -224,3 +226,29 @@ extra_hosts 里需要配置好order节点的ip和当前两个org锚节点的ip�
 在org3 cli中执行  
 `peer chaincode install -n mycc -v 2.0 -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02/`  
 注意这里的-v升级成了2.0  
+然后在org1和org2的cli中安装2.0版本的链码  
+`peer chaincode install -n mycc -v 2.0 -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02/`  
+在org1的cli中升级策略  
+`peer chaincode upgrade -o orderer.example.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -v 2.0 -c '{"Args":["init","d","90","c","210"]}' -P "OR ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')"`  
+可以看到背书策略升级为了-P "OR ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')"表示添加了org3这个组织  
+***  
+# 总结&坑  
+fabric不是很好用，有些地方错了一步需要推到重来。通过官网提供的工具动态加入组织很麻烦，其实简单理解一下动态加的步骤  
+1：获取当前网络的配置  
+2：把org3的配置加上去  
+3：计算一下加上org3之后的配置文件和当前网络配置文件的差值生成一个增量文件    
+4：已在网络内的组织对这个增量文件进行签名，允许其进入  
+5：启动org3获取channel信息并加入  
+6：升级链码和背书策略  
+**动态加入关键在于获取这个增量文件，其中会涉及到很多次的.pb文件和.json文件之间的转换**，这个是比较麻烦的。  
+个人感觉实际应用的话可以这么去操作： 首先预估项目组织的规模，如果项目后期扩充规模在100个组织左右，那刚刚开始的时候在配置文件里预留好300个坑位，后期新加入一个组织用一个坑位。等到300个组织满员之后，再通过configtxlator工具对于新加入的组织进行扩充。换句话说就是初期愿意加入的组织算是初创成员，后期加入的可以收一波会员费hhh  
+
+
+官网教程也有很多的坑，下面把我遇到的一些坑罗列一下......有些记不得了欢迎补充。  
+## 坑  
+1：启动order节点没问题，org1创建通道加入都没问题，org2 join channel的时候报错....报错误信息bad proposal 500的....首先检查docker images的版本是否一致....检查版本是否一致...检查版本是否一致....检查配置extra_hosts写的对不对  
+2: chaincode fingerprint mismatch: data mismatch 加入通道安装链码都ok，但是查询的时候报这个错，这个是因为安装链码的时候链码所在的路径不一致，或者链码的内容版本不一致，导致生成的链码ID不一致。在install完链码之后最好输一下`peer chaincode list --installed`查看一下安装了的链码信息，尤其是ID，正常的话这个ID应该都是一致的，如果不一致检查自己安装链码的语句，比如  
+`peer chaincode install -n mycc -v 2.0 -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02/`  和  
+`peer chaincode install -n mycc -v 2.0 -p github.com/hyperledger/fabric/multipeer/chaincode/go/fudancode02`  
+少一个/生成的链码ID会不一样，这个坑了不少时间....  
+其他的也没什么大问题，主要还是写配置文件的时候要仔细，像组织名org1和org2不要写混了，ip地址别配错了。  
